@@ -23,11 +23,11 @@ GUILD_ID = 176056427285184512
 TEAMS = [
     {
         "name": "Lorax",
-        "role_id": None,
+        "role_id": 912266638890508289,
     },
     {
         "name": "Krampus",
-        "role_id": None,
+        "role_id": 912266644519268403,
     },
 ]
 
