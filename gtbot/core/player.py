@@ -1,6 +1,9 @@
 import discord
 
-from gtbot.core.team import Team
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from gtbot.core.team import Team
 
 
 class Player:
@@ -10,7 +13,7 @@ class Player:
 
     def __init__(self, member: discord.Member):
         self.member = member
-        self.team: Team = None
+        self.team: "Team" = None
 
     def __repr__(self):
         member = self.member
