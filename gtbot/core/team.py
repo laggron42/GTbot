@@ -1,6 +1,6 @@
 import discord
 
-from typing import List
+from typing import List, Union
 
 from discord.errors import NotFound
 
@@ -13,9 +13,10 @@ class Team:
     Represents a team in the war
     """
 
-    def __init__(self, name: str, role: discord.Role):
+    def __init__(self, name: str, role: discord.Role, emoji: Union[str, discord.Emoji] = None):
         self.name = name
         self.role = role
+        self.emoji = emoji
         self.members: List[Player] = []
 
     def __str__(self):
@@ -25,6 +26,9 @@ class Team:
         name = self.name
         role = self.role
         return f"<GTbot.Team {name=} {role=} size={len(role.members)}>"
+
+    def __len__(self):
+        return len(self.members)
 
     async def add_player(self, player: Player):
         if player in self.members:
