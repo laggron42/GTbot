@@ -14,6 +14,7 @@ class Player:
     def __init__(self, member: discord.Member):
         self.member = member
         self.team: "Team" = None
+        self.score = 0
 
     def __repr__(self):
         member = self.member
