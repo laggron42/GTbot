@@ -19,12 +19,17 @@ class TeamMenuSelector(Select):
     def __init__(self, teams: List[Team]):
         self.teams = teams
         options = []
-        for team in self.teams:
-            options.append(TeamViewer(team))
+        for i, team in enumerate(self.teams):
+            tv = TeamViewer(team)
+            tv.value = i
+            options.append(tv)
         super().__init__(
             placeholder="Cliquez pour afficher les détails d'une équipe",
             options=options,
         )
 
+    async def show_team_info(self):
+        pass
+
     async def callback(self, interaction: Interaction):
-        print(interaction)
+        pass

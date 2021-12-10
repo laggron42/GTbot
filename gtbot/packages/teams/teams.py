@@ -2,7 +2,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from discord.ext import commands
-from discord.ui.view import View
+# from discord.ui.view import View
 from dislash.application_commands.slash_core import slash_command
 from dislash.interactions.app_command_interaction import SlashInteraction
 from dislash.interactions.application_command import OptionParam
@@ -10,7 +10,7 @@ from dislash.interactions.application_command import OptionParam
 from gtbot.core.errors import NotFound
 from gtbot.core.team import Team
 
-from .team_viewer import TeamMenuSelector
+# from .team_viewer import TeamMenuSelector
 
 if TYPE_CHECKING:
     from gtbot.core.bot import GTBot
@@ -52,18 +52,35 @@ class Teams(commands.Cog):
             player = self.bot.add_player(inter.author)
             await team.add_player(player)
             await inter.reply(
-                "Vous êtes désormais inscrit à l'événement et avez rejoint l'équipe des {}!"
+                "Vous êtes désormais inscrit à l'événement "
+                f"et avez rejoint l'équipe des {team.name}!"
             )
         else:
             await player.clear_team()
             await team.add_player(player)
             await inter.reply("Vous avez désormais changé d'équipe.")
 
+    @teams.sub_command(name="leave", description="Quittez votre équipe actuelle")
+    async def teams_leave(
+        self,
+        inter: SlashInteraction,
+    ):
+        try:
+            player = self.bot.find_player(inter.author)
+        except NotFound:
+            await inter.reply("Vous n'êtes pas inscrit à l'événement.")
+        else:
+            if player.team is None:
+                await inter.reply("Vous n'avez pas de team actuellement.")
+            else:
+                await player.clear_team()
+                await inter.reply("Vous avez quitté votre équipe.")
+
     @teams.sub_command(name="list", description="Liste les différentes équipes")
     async def teams_list(self, inter: SlashInteraction):
-        view = View()
-        view.add_item(TeamMenuSelector(self.bot.teams))
+        # view = View()
+        # view.add_item(TeamMenuSelector(self.bot.teams))
         message = "__**Liste des équipes**__\n\n"
         for team in self.bot.teams:
             message += f"**{team.name}**: {len(team)} membres\n"
-        await inter.reply(message, view=view)
+        await inter.reply(message)
