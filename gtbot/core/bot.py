@@ -13,6 +13,7 @@ from dislash import SlashInteraction
 from dislash.application_commands.errors import ApplicationCommandError
 
 from gtbot.core.team import Team
+from gtbot.core.trees import TreeManager
 from gtbot.core.player import Player
 from gtbot.core.errors import NotFound
 
@@ -40,9 +41,11 @@ class GTBot(commands.Bot):
     def __init__(self, command_prefix, **options):
         super().__init__(command_prefix, **options)
         self._shutdown = 0
+
         self.guild: discord.Guild
         self.players: List[Player] = []
         self.teams: List[Team] = []
+        self.trees = TreeManager(150)
 
     def init_teams(self):
         for team in TEAMS:
