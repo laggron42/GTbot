@@ -47,7 +47,7 @@ async def shutdown_handler(bot: GTBot, signal_type: str = None):
     if signal_type:
         log.info(f"Received {signal_type}, stopping the bot...")
     else:
-        log.info("Stopping the bot...")
+        log.info("Shutting down the bot...")
     try:
         await bot.close()
     finally:
@@ -67,6 +67,9 @@ def main():
     time.sleep(1)
 
     try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
         init_logger(cli_flags.debug)
 
         token = cli_flags.token or os.environ.get("GTBOT_TOKEN", None)
@@ -75,9 +78,6 @@ def main():
             print("[yellow]Vous devez fournir un token avec le flag --token.[/yellow]")
             time.sleep(1)
             sys.exit(0)
-
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
 
         bot = GTBot(command_prefix="!?")
         dislash.InteractionClient(bot, test_guilds=[176056427285184512])
@@ -95,10 +95,19 @@ def main():
     except KeyboardInterrupt:
         if bot is not None:
             loop.run_until_complete(shutdown_handler(bot, "Ctrl+C"))
+    except SystemExit:
+        if bot is not None:
+            loop.run_until_complete(shutdown_handler(bot))
     except Exception:
         log.critical("Unhandled exception.", exc_info=True)
         if bot is not None:
             loop.run_until_complete(shutdown_handler(bot))
+    finally:
+        loop.run_until_complete(loop.shutdown_asyncgens())
+        asyncio.set_event_loop(None)
+        loop.stop()
+        loop.close()
+        sys.exit(bot._shutdown)
 
 
 if __name__ == "__main__":
