@@ -12,3 +12,11 @@ class NotFound(GTException):
     """
 
     pass
+
+
+class AlreadyPresent(GTException):
+    """
+    You're trying to assign someone to solething he is already assigned to.
+    """
+
+    pass
