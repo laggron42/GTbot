@@ -5,4 +5,11 @@ __pycache__
 # macOS
 .DS_Store
 
+# Python binaries
+*.egg-info
+dist
+
+# log files
+*.log*
+
 venv
