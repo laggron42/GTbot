@@ -12,4 +12,8 @@ dist
 # log files
 *.log*
 
+# Virtual environment
 venv
+
+# Visual Studio code settings
+.vscode
