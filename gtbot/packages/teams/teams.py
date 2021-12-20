@@ -17,8 +17,8 @@ if TYPE_CHECKING:
 
 
 class TeamSelector(Enum):
-    Lorax = "Lorax"
-    Krampus = "Krampus"
+    Lorax = "lorax"
+    Krampus = "krampus"
 
 
 class Teams(commands.Cog):
