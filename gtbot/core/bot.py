@@ -40,7 +40,8 @@ class GTBot(commands.Bot):
     slash: SlashClient
 
     def __init__(self, command_prefix, **options):
-        super().__init__(command_prefix, **options)
+        intents = discord.Intents(guilds=True, members=True, messages=True, reactions=True)
+        super().__init__(command_prefix, intents=intents, **options)
         self._shutdown = 0
 
         self.guild: discord.Guild
