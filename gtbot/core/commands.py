@@ -31,16 +31,16 @@ class Core(commands.Cog):
         pass
 
     @extensions.command(name="load")
-    async def extensions_load(self, inter: SlashInteraction, extension: str):
+    async def extensions_load(self, ctx: commands.Context, extension: str):
         await self.bot.load_extension(extension)
-        await inter.reply("Extension chargée.")
+        await ctx.send("Extension chargée.")
 
     @extensions.command(name="reload")
-    async def extensions_reload(self, inter: SlashInteraction, extension: str):
+    async def extensions_reload(self, ctx: commands.Context, extension: str):
         await self.bot.reload_extension(extension)
-        await inter.reply("Extension rechargée.")
+        await ctx.send("Extension rechargée.")
 
     @extensions.command(name="unload")
-    async def extensions_unload(self, inter: SlashInteraction, extension: str):
+    async def extensions_unload(self, ctx: commands.Context, extension: str):
         await self.bot.unload_extension(extension)
-        await inter.reply("Extension déchargée.")
+        await ctx.send("Extension déchargée.")
