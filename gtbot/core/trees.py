@@ -16,17 +16,17 @@ class TreeManager:
         self.lock = asyncio.Lock()
 
     async def add_tree(self, count: int, player: Player = None):
-        async with self.lock():
+        async with self.lock:
             self._count += count
             if player:
                 player.score += count
 
     async def remove_tree(self, count: int, player: Player = None):
-        async with self.lock():
+        async with self.lock:
             self._count -= count
             if player:
                 player.score -= count
 
     async def count(self):
-        async with self.lock():
+        async with self.lock:
             return self._count
