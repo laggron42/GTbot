@@ -63,9 +63,9 @@ class ActionList(commands.Cog):
         await self._run_action_hooks(action, action.pre_action_hook())
         await self._run_action_hooks(action, action.action())
         if action.trees > 0:
-            self.bot.trees.add_tree(action.trees, action.author)
+            await self.bot.trees.add_tree(action.trees, action.author)
         else:
-            self.bot.trees.remove_tree(-action.trees, action.author)
+            await self.bot.trees.remove_tree(-action.trees, action.author)
         await self._run_action_hooks(action, action.post_action_hook())
 
     @commands.Cog.listener("on_raw_reaction_add")
@@ -81,13 +81,13 @@ class ActionList(commands.Cog):
 
         if player.team is None:
             return
-        if player.team is Lorax:
+        if isinstance(player.team, Lorax):
             actions = self.bot.lorax.actions
         else:
             actions = self.bot.krampus.actions
 
         try:
-            action = next(filter(lambda x: x.emoji == payload.emoji, actions))
+            action = next(filter(lambda x: x.emoji == payload.emoji.name, actions))
         except StopIteration:
             return
         channel = self.bot.guild.get_channel(payload.channel_id)
@@ -104,6 +104,8 @@ class ActionList(commands.Cog):
             return
         try:
             await self.run_action(player, action, message)
+        except NotAllowed:
+            pass
         except:
             log.error(f"Failed running action {action}.", exc_info=True)
 
