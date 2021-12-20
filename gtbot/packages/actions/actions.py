@@ -1,75 +1,24 @@
 import discord
 import logging
 
-from datetime import timedelta
-from typing import Coroutine, List, Optional, Union
+from typing import Coroutine, List, Union, TYPE_CHECKING
 
 from discord.ext import commands
 
-from gtbot.core.bot import GTBot
+from gtbot.core.action import Action
 from gtbot.core.errors import NotAllowed, NotFound, SilentError
-from gtbot.core.player import Player
+from gtbot.core.team import Lorax, Krampus
+
+from .lorax import PlantTree, CreateForest, DoublePoints
+
+if TYPE_CHECKING:
+    from gtbot.core.player import Player
+    from gtbot.core.bot import GTBot
+
+LORAX_ACTIONS = [PlantTree, CreateForest, DoublePoints]
+KRAMPUS_ACTIONS = []
 
 log = logging.getLogger("gtbot.packages.actions")
-
-
-class Action:
-    """
-    Represents a single action.
-
-    When creating an action, inherit from this class and implement the following values:
-
-    Attributes
-    ----------
-    emoji: Union[str, discord.Emoji]
-        The emoji representing the action.
-    cooldown: Union[int, timedelta]
-        If the action was successful, set the following cooldown on the user
-        (seconds or timedelta object).
-    targeted: bool
-        Set to `True` if the user has to specify a member with his action.
-    trees: int
-        The number (positive or negative) of trees to edit once the action is over.
-    """
-
-    def __init__(self, bot: GTBot, player: Player, message: discord.Message, target: Optional[Player]):
-        self.bot = bot
-        self.player = self.author = player
-        self.message = message
-        self.channel = message.channel
-        self.taget = target
-
-    emoji: Union[str, discord.Emoji]
-    cooldown: Union[int, timedelta]
-    targeted: bool
-    trees: int
-
-    async def pre_action_hook(self):
-        """
-        This function is called before performing an action.
-        You must put any kind of verification here (cooldown excluded).
-
-        If you must cancel the action, raise `~gtbot.core.errors.NotAllowed`.
-        """
-        pass
-
-    async def action(self):
-        """
-        The function called when a member is running the specified action.
-
-        This passed the cooldown and other checks.
-
-        If nothing special has to be done or is already specified by the `trees` attribute,
-        leave this empty.
-        """
-        pass
-
-    async def post_action_hook(self):
-        """
-        The action was successful.
-        You may put any kind of post processing here (cooldown excluded).
-        """
-        pass
 
 
 class ActionList(commands.Cog):
@@ -77,8 +26,10 @@ class ActionList(commands.Cog):
     The cog managing the player actions.
     """
 
-    def __init__(self, bot: GTBot):
+    def __init__(self, bot: "GTBot"):
         self.bot = bot
+        self.bot.lorax.actions = LORAX_ACTIONS
+        self.bot.krampus.actions = KRAMPUS_ACTIONS
 
     async def _get_target(self, mentions: List[Union[discord.User, discord.Member]]):
         try:
@@ -104,11 +55,7 @@ class ActionList(commands.Cog):
             )
             raise SilentError from e
 
-    async def run_action(self, action: type[Action], message: discord.Message):
-        try:
-            player = self.bot.find_player(message.author)
-        except NotFound as e:
-            raise NotAllowed("Only player can perform actions") from e
+    async def run_action(self, player: "Player", action: type[Action], message: discord.Message):
         target = None
         if action.targeted:
             target = await self._get_target(message.mentions)
@@ -120,6 +67,45 @@ class ActionList(commands.Cog):
         else:
             self.bot.trees.remove_tree(-action.trees, action.author)
         await self._run_action_hooks(action, action.post_action_hook())
+
+    @commands.Cog.listener("on_raw_reaction_add")
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        if payload.guild_id != self.bot.guild.id:
+            return
+
+        member = self.bot.guild.get_member(payload.user_id)
+        try:
+            player = self.bot.find_player(member)
+        except NotFound as e:
+            return
+
+        if player.team is None:
+            return
+        if player.team is Lorax:
+            actions = self.bot.lorax.actions
+        else:
+            actions = self.bot.krampus.actions
+
+        try:
+            action = next(filter(lambda x: x.emoji == payload.emoji, actions))
+        except StopIteration:
+            return
+        channel = self.bot.guild.get_channel(payload.channel_id)
+        if channel is None:
+            log.error(f"Channel {payload.channel_id} not found while processing action.")
+            return
+        try:
+            message = await channel.fetch_message(payload.message_id)
+        except discord.DiscordException as e:
+            log.error(
+                f"Cannot fetch message {payload.message_id} while processing action.",
+                exc_info=True,
+            )
+            return
+        try:
+            await self.run_action(player, action, message)
+        except:
+            log.error(f"Failed running action {action}.", exc_info=True)
 
 
 # try:

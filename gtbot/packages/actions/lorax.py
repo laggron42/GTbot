@@ -1,8 +1,10 @@
 import asyncio
-from datetime import date, timedelta
-from gtbot.core.errors import NotAllowed
 
-from .actions import Action
+from datetime import date, timedelta
+
+from gtbot.core.errors import NotAllowed
+from gtbot.core.action import Action
+
 
 
 class PlantTree(Action):
