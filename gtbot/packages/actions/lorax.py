@@ -46,5 +46,5 @@ class DoublePoints(Action):
     trees = 1
 
     async def pre_action_hook(self):
-        if date.today().replace(year=0) != date(year=0, month=12, day=25):
+        if date.today().replace(year=1) == date(year=1, month=12, day=25):
             self.trees = 2
