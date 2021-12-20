@@ -13,6 +13,7 @@ from rich import print
 from gtbot import __version__ as bot_version
 from gtbot.loggers import init_logger
 from gtbot.core.bot import GTBot
+from gtbot.core.dev import Dev
 from gtbot.core.commands import Core
 
 log = logging.getLogger("gtbot")
@@ -20,11 +21,10 @@ log = logging.getLogger("gtbot")
 
 def parse_cli_flags(arguments: str):
     parser = argparse.ArgumentParser(prog="GT bot", description="La guerre des Krampus et Lorax")
-    parser.add_argument(
-        "--version", "-V", action="store_true", help="Affiche la version du bot"
-    )
+    parser.add_argument("--version", "-V", action="store_true", help="Affiche la version du bot")
     parser.add_argument("--debug", action="store_true", help="Active les logs de debug")
     parser.add_argument("--token", action="store", type=str, help="Le token du bot")
+    parser.add_argument("--dev", action="store_true", help="Activer le mode développeur")
     args = parser.parse_args(arguments)
     return args
 
@@ -80,8 +80,11 @@ def main():
             sys.exit(0)
 
         bot = GTBot(command_prefix="!?")
+        bot.owner_id = 348415857728159745
         dislash.InteractionClient(bot, test_guilds=[176056427285184512])
         bot.add_cog(Core(bot))
+        if cli_flags.dev:
+            bot.add_cog(Dev())
 
         try:
             loop.add_signal_handler(signal.SIGTERM, shutdown_handler, bot, "SIGTERM")
