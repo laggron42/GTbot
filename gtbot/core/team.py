@@ -1,11 +1,12 @@
 import discord
 
-from typing import List, Union
+from typing import List, Type, Union
 
 from discord.errors import NotFound
 
 from gtbot.core.errors import AlreadyPresent
 from gtbot.core.player import Player
+from gtbot.core.action import Action
 
 
 class Team:
@@ -13,11 +14,15 @@ class Team:
     Represents a team in the war
     """
 
-    def __init__(self, name: str, role: discord.Role, emoji: Union[str, discord.Emoji] = None):
-        self.name = name
+    name: str
+    members: List[Player]
+    actions: List[Type[Action]]
+
+    def __init__(self, role: discord.Role, emoji: Union[str, discord.Emoji] = None):
         self.role = role
         self.emoji = emoji
-        self.members: List[Player] = []
+        self.members = []
+        self.actions = []
 
     def __str__(self):
         return self.name
@@ -43,3 +48,11 @@ class Team:
         await player.member.remove_roles(self.role)
         self.members.remove(player)
         player.team = None
+
+
+class Lorax(Team):
+    name = "Lorax"
+
+
+class Krampus(Team):
+    name = "Krampus"

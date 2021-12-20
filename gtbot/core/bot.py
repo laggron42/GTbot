@@ -5,6 +5,7 @@ import sys
 
 from importlib.machinery import ModuleSpec
 from importlib.util import find_spec
+from dislash.application_commands.slash_client import SlashClient
 from rich import print
 from typing import List
 
@@ -12,25 +13,23 @@ from discord.ext import commands
 from dislash import SlashInteraction
 from dislash.application_commands.errors import ApplicationCommandError
 
-from gtbot.core.team import Team
+from gtbot.core.team import Team, Lorax, Krampus
 from gtbot.core.trees import TreeManager
 from gtbot.core.player import Player
 from gtbot.core.errors import NotFound
 
 log = logging.getLogger("gtbot.core.bot")
 
-PACKAGES = ["teams"]
+PACKAGES = ["teams", "actions"]
 GUILD_ID = 176056427285184512
-TEAMS = [
-    {
-        "name": "Lorax",
+TEAMS = {
+    Lorax: {
         "role_id": 912266638890508289,
     },
-    {
-        "name": "Krampus",
+    Krampus: {
         "role_id": 912266644519268403,
     },
-]
+}
 
 
 class GTBot(commands.Bot):
@@ -38,30 +37,31 @@ class GTBot(commands.Bot):
     Go Together! bot
     """
 
+    slash: SlashClient
+
     def __init__(self, command_prefix, **options):
         super().__init__(command_prefix, **options)
         self._shutdown = 0
 
         self.guild: discord.Guild
         self.players: List[Player] = []
-        self.teams: List[Team] = []
+        self.lorax: Lorax
+        self.krampus: Krampus
         self.trees = TreeManager(150)
 
     def init_teams(self):
-        for team in TEAMS:
-            role = self.guild.get_role(team["role_id"])
+        for team, data in TEAMS.items():
+            role = self.guild.get_role(data["role_id"])
             if not role:
                 log.warning(
-                    f"Failed to load team {team['name']}, "
-                    f"role with ID {team['role_id']} could not be found!"
+                    f"Failed to load team {team}, "
+                    f"role with ID {data['role_id']} could not be found!"
                 )
                 continue
             try:
-                team_object = Team(team["name"], role)
+                setattr(self, team.__name__.lower(), team(role))
             except Exception:
-                log.warning(f"Failed to initialize team {team['name']}.", exc_info=True)
-            else:
-                self.teams.append(team_object)
+                log.warning(f"Failed to initialize team {team}.", exc_info=True)
 
     def find_player(self, member: discord.Member):
         try:
@@ -117,7 +117,7 @@ class GTBot(commands.Bot):
                 exc_info=True,
             )
         else:
-            log.info(f"Loaded {len(self.teams)} teams.")
+            log.info(f"Loaded teams.")
         log.info("Loading packages...")
         loaded_packages = []
         for package in PACKAGES:

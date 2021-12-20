@@ -17,8 +17,8 @@ if TYPE_CHECKING:
 
 
 class TeamSelector(Enum):
-    Lorax = 0
-    Krampus = 1
+    Lorax = "Lorax"
+    Krampus = "Krampus"
 
 
 class Teams(commands.Cog):
@@ -45,7 +45,7 @@ class Teams(commands.Cog):
                 "et les équipes ne sont pas disponibles."
             )
             return
-        team: Team = self.bot.teams[team]
+        team: Team = getattr(self.bot, team)
         try:
             player = self.bot.find_player(inter.author)
         except NotFound:
@@ -81,6 +81,6 @@ class Teams(commands.Cog):
         # view = View()
         # view.add_item(TeamMenuSelector(self.bot.teams))
         message = "__**Liste des équipes**__\n\n"
-        for team in self.bot.teams:
+        for team in [self.bot.lorax, self.bot.krampus]:
             message += f"**{team.name}**: {len(team)} membres\n"
         await inter.reply(message)
