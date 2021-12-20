@@ -87,7 +87,12 @@ def main():
             bot.add_cog(Dev())
 
         try:
-            loop.add_signal_handler(signal.SIGTERM, shutdown_handler, bot, "SIGTERM")
+            loop.add_signal_handler(
+                signal.SIGTERM,
+                lambda: asyncio.create_task(shutdown_handler(bot, signal.SIGTERM)),
+                bot,
+                "SIGTERM",
+            )
         except NotImplementedError:
             # Not a UNIX environment (Windows)
             pass
