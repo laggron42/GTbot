@@ -24,3 +24,23 @@ class Core(commands.Cog):
         msg = await inter.reply("Pong!")
         t2 = time.time()
         await msg.edit(content="Pong!\nDelay: `{t}ms`".format(t=round((t2 - t1) * 1000)))
+
+    @commands.group()
+    @commands.is_owner()
+    async def extensions(self, inter: SlashInteraction):
+        pass
+
+    @extensions.command(name="load")
+    async def extensions_load(self, inter: SlashInteraction, extension: str):
+        await self.bot.load_extension(extension)
+        await inter.reply("Extension chargée.")
+
+    @extensions.command(name="reload")
+    async def extensions_reload(self, inter: SlashInteraction, extension: str):
+        await self.bot.reload_extension(extension)
+        await inter.reply("Extension rechargée.")
+
+    @extensions.command(name="unload")
+    async def extensions_unload(self, inter: SlashInteraction, extension: str):
+        await self.bot.unload_extension(extension)
+        await inter.reply("Extension déchargée.")
